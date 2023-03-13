@@ -1,10 +1,10 @@
 from twilio.rest import Client
 
 # Twilio account information
-account_sid = 'your_account_sid'
-auth_token = 'your_auth_token'
-twilio_number = 'your_twilio_phone_number'
-recipient_number = 'recipient_phone_number'
+account_sid = 'AC8378f6d297412710b1c3489b01f028cc'
+auth_token = 'b4a12fd7ec70adff6b738d3ff9284301'
+twilio_number = '+15075563899'
+recipient_number = '+918850081110'
 
 # Message content
 message = 'Hello from your Raspberry Pi!'
