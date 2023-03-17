@@ -1,23 +1,25 @@
 import RPi.GPIO as GPIO
 import time
 
-# Define GPIO pins for solenoid lock and vibration sensor
+# Define GPIO pins for solenoid lock, vibration sensor, and relay
 solenoid_pin = 18
 vibration_pin = 23
+relay_pin = 24
 
 # Set up GPIO pins
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(solenoid_pin, GPIO.OUT)
 GPIO.setup(vibration_pin, GPIO.IN)
+GPIO.setup(relay_pin, GPIO.OUT)
 
 # Define function to lock the solenoid lock
 def lock():
-    GPIO.output(solenoid_pin, GPIO.HIGH)
+    GPIO.output(relay_pin, GPIO.HIGH) # Activate the relay to lock the solenoid lock
     print("Locking the solenoid lock")
 
 # Define function to unlock the solenoid lock
 def unlock():
-    GPIO.output(solenoid_pin, GPIO.LOW)
+    GPIO.output(relay_pin, GPIO.LOW) # Deactivate the relay to unlock the solenoid lock
     print("Unlocking the solenoid lock")
 
 # Main loop
