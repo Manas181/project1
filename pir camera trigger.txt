@@ -1,0 +1,21 @@
+import RPi.GPIO as GPIO
+import time
+import subprocess
+
+# Initialize the PIR sensor's input pin
+pir_pin = 18
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(pir_pin, GPIO.IN)
+
+# Define the command to capture an image from the webcam
+filename = 'image.jpg'  # set the filename
+command = f"fswebcam -r 1280x720 --no-banner {filename}"
+
+# Loop forever, waiting for motion detected by the PIR sensor
+while True:
+    if GPIO.input(pir_pin):
+        # Motion detected, so take a picture with the webcam
+        subprocess.call(command, shell=True)
+        print(f"Picture taken: {filename}")
+        time.sleep(1)  # wait a second to avoid multiple captures for the same motion
+    time.sleep(0.1)  # wait a tenth of a second before checking the PIR sensor again

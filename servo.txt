@@ -1,0 +1,31 @@
+import RPi.GPIO as GPIO
+import time
+
+# Set the GPIO mode and pin number
+GPIO.setmode(GPIO.BCM)
+servo_pin = 18
+
+# Set up the servo motor
+GPIO.setup(servo_pin, GPIO.OUT)
+servo = GPIO.PWM(servo_pin, 50)  # 50 Hz PWM frequency
+
+# Move the servo motor by 90 degrees
+servo.start(7.5)  # 7.5% duty cycle = middle position
+time.sleep(1)  # Wait for the servo to reach the middle position
+servo.ChangeDutyCycle(2.5)  # 2.5% duty cycle = 0 degrees
+time.sleep(1)  # Wait for the servo to move to 0 degrees
+servo.ChangeDutyCycle(12.5)  # 12.5% duty cycle = 180 degrees
+time.sleep(1)  # Wait for the servo to move to 180 degrees
+servo.ChangeDutyCycle(7.5)  # 7.5% duty cycle = middle position
+time.sleep(1)  # Wait for the servo to move back to the middle position
+
+# Clean up the GPIO pins
+servo.stop()
+GPIO.cleanup()
+
+
+
+Raspberry Pi          Servo Motor
+     5V   -------------- VCC
+     GND  -------------- GND
+GPIO 18  -------------- Signal
