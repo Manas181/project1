@@ -1,0 +1,33 @@
+import RPi.GPIO as GPIO
+import time
+
+# setup GPIO pins
+GPIO.setmode(GPIO.BOARD)
+vibration_pin = 12   # vibration sensor connected to GPIO pin 12
+servo_pin = 11       # servo motor connected to GPIO pin 11
+buzzer_pin = 13      # buzzer connected to GPIO pin 13
+GPIO.setup(vibration_pin, GPIO.IN)
+GPIO.setup(servo_pin, GPIO.OUT)
+GPIO.setup(buzzer_pin, GPIO.OUT)
+
+# setup servo motor
+servo = GPIO.PWM(servo_pin, 50)
+servo.start(0)
+
+while True:
+    if GPIO.input(vibration_pin):
+        # vibration detected, move servo motor to 90 degrees and turn on buzzer
+        servo.ChangeDutyCycle(7.5)  # 90 degrees
+        print("Servo moved to 90 degrees")
+        GPIO.output(buzzer_pin, GPIO.HIGH)
+        time.sleep(1)
+    else:
+        # no vibration detected, move servo motor to 0 degrees and turn off buzzer
+        servo.ChangeDutyCycle(2.5)  # 0 degrees
+        print("Servo moved to 0 degrees")
+        GPIO.output(buzzer_pin, GPIO.LOW)
+        time.sleep(1)
+
+# cleanup GPIO pins
+servo.stop()
+GPIO.cleanup()
