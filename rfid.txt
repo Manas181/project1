@@ -1,0 +1,45 @@
+import RPi.GPIO as GPIO
+import time
+from mfrc522 import SimpleMFRC522
+
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)
+
+reader = SimpleMFRC522()
+
+try:
+    text = input('Enter the data you want to store on the tag: ')
+    print("Hold a tag near the reader")
+    id, _ = reader.write(text)
+    print("Data written successfully to tag with ID: {}".format(id))
+finally:
+    GPIO.cleanup()
+
+
+
+
+import RPi.GPIO as GPIO
+import time
+from mfrc522 import SimpleMFRC522
+
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)
+
+reader = SimpleMFRC522()
+authorized_ids = ["123ABC", "456DEF"] # List of authorized tag IDs
+
+try:
+    while True:
+        print("Hold a tag near the reader")
+        id, text = reader.read()
+        if id in authorized_ids:
+            print("Access Granted")
+            # Perform action to unlock or grant access
+            time.sleep(5)
+            # Lock or disable access after 5 seconds
+        else:
+            print("Access Denied")
+            # Perform action to lock or deny access
+            time.sleep(2)
+finally:
+    GPIO.cleanup()
