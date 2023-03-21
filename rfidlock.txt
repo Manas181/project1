@@ -1,0 +1,67 @@
+import RPi.GPIO as GPIO
+import time
+import MFRC522 # RFID reader library
+import signal
+import sqlite3 # Database library
+
+# Setup servo motor pins
+servoPIN = 17
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(servoPIN, GPIO.OUT)
+
+# Initialize servo motor
+p = GPIO.PWM(servoPIN, 50) # GPIO 17 for PWM with 50Hz
+p.start(2.5) # Initialization
+
+# Setup RFID reader
+MIFAREReader = MFRC522.MFRC522()
+
+# Setup database connection
+conn = sqlite3.connect('users.db')
+c = conn.cursor()
+
+# Create users table if it doesn't exist
+c.execute('''CREATE TABLE IF NOT EXISTS users
+             (uid text, name text)''')
+conn.commit()
+
+# Function to handle SIGINT signal (Ctrl+C)
+def end_read(signal, frame):
+    print("Ctrl+C captured, ending read.")
+    GPIO.cleanup()
+    sys.exit()
+
+# Hook the SIGINT
+signal.signal(signal.SIGINT, end_read)
+
+# Main loop
+while True:
+    # Wait for RFID tag to be detected
+    (status,TagType) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
+
+    # If tag detected, get the UID
+    if status == MIFAREReader.MI_OK:
+        print("Card detected")
+        (status,uid) = MIFAREReader.MFRC522_Anticoll()
+
+        # If UID not in database, add it
+        if c.execute("SELECT * FROM users WHERE uid=?", (str(uid),)).fetchone() is None:
+            name = input("New user detected. Enter name: ")
+            c.execute("INSERT INTO users (uid, name) VALUES (?, ?)", (str(uid), name))
+            conn.commit()
+            print("User added: {}".format(name))
+
+        # If UID in database, get user's name
+        else:
+            name = c.execute("SELECT name FROM users WHERE uid=?", (str(uid),)).fetchone()[0]
+            print("User authenticated: {}".format(name))
+
+            # Unlock door
+            p.ChangeDutyCycle(7.5)
+            time.sleep(2)
+
+            # Lock door
+            p.ChangeDutyCycle(2.5)
+            time.sleep(1)
+
+    time.sleep(0.1)
