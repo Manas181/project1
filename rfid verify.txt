@@ -1,0 +1,58 @@
+import RPi.GPIO as GPIO
+import MFRC522
+import signal
+import time
+
+# Servo motor configuration
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(11, GPIO.OUT)
+servo = GPIO.PWM(11, 50)  # 50 Hz PWM
+servo.start(0)
+
+# RFID reader/writer configuration
+MIFAREReader = MFRC522.MFRC522()
+
+# Define a function to move the servo motor
+def move_servo(angle):
+    duty = angle / 18 + 2.5  # Map angle (0 to 180) to duty cycle (2.5 to 12.5)
+    servo.ChangeDutyCycle(duty)
+    time.sleep(1)  # Wait for the servo to move
+    servo.ChangeDutyCycle(0)  # Stop the servo
+
+# Define a signal handler to clean up GPIO on exit
+def cleanup_gpio(signal, frame):
+    GPIO.cleanup()
+    sys.exit(0)
+
+# Set up signal handler
+signal.signal(signal.SIGINT, cleanup_gpio)
+
+# Main loop
+while True:
+    # Wait for an RFID tag to be detected
+    (status, TagType) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
+
+    # If a tag is detected, get the UID
+    if status == MIFAREReader.MI_OK:
+        print("RFID tag detected")
+        (status, uid) = MIFAREReader.MFRC522_SelectTagSN()
+
+        # If the UID is successfully retrieved, read the data from the tag
+        if status == MIFAREReader.MI_OK:
+            print("UID:", uid)
+            (status, data) = MIFAREReader.MFRC522_Read(8)  # Read data from block 8
+
+            # If the data is successfully read, verify it
+            if status == MIFAREReader.MI_OK:
+                expected_data = "secret data"  # Replace with your expected data
+                if data == expected_data:
+                    print("Tag verified")
+                    move_servo(0)  # Keep servo at 0 degrees
+                else:
+                    print("Tag not verified")
+                    move_servo(90)  # Move servo by 90 degrees
+            else:
+                print("Error reading data from tag")
+        else:
+            print("Error getting UID from tag")
+    time.sleep(1)
