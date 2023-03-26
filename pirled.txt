@@ -1,0 +1,42 @@
+import RPi.GPIO as GPIO
+import time
+
+# Set the GPIO mode and pin numbers
+GPIO.setmode(GPIO.BOARD)
+pir_sensor_pin = 7
+led_pin = 11
+
+# Set up the GPIO pins
+GPIO.setup(pir_sensor_pin, GPIO.IN)
+GPIO.setup(led_pin, GPIO.OUT)
+
+# Initialize the LED state to off
+led_state = False
+GPIO.output(led_pin, led_state)
+
+# Define a callback function for when motion is detected
+def motion_detected(channel):
+    global led_state
+    if GPIO.input(pir_sensor_pin):
+        # Motion detected, turn on LED
+        led_state = True
+        GPIO.output(led_pin, led_state)
+        print("Motion detected!")
+    else:
+        # No motion detected, turn off LED
+        led_state = False
+        GPIO.output(led_pin, led_state)
+        print("No motion detected.")
+
+# Add the motion detection callback function to the PIR sensor pin
+GPIO.add_event_detect(pir_sensor_pin, GPIO.BOTH, callback=motion_detected)
+
+# Wait for motion detection events
+try:
+    while True:
+        time.sleep(1)
+except KeyboardInterrupt:
+    pass
+
+# Clean up the GPIO pins
+GPIO.cleanup()
