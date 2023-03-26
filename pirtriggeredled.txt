@@ -1,0 +1,30 @@
+import time
+import RPi.GPIO as GPIO
+import subprocess
+
+# Set up PIR sensor pin and LED pin
+pir_pin = 7
+led_pin = 11
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(pir_pin, GPIO.IN)
+GPIO.setup(led_pin, GPIO.OUT)
+
+# Set up webcam device
+webcam_device = "/dev/video0"
+
+# Loop forever
+while True:
+    # Wait for PIR sensor to be triggered
+    while GPIO.input(pir_pin) == GPIO.LOW:
+        time.sleep(0.1)
+
+    # PIR sensor has been triggered, turn on LED
+    GPIO.output(led_pin, GPIO.HIGH)
+
+    # Capture image
+    image_filename = time.strftime("%Y%m%d-%H%M%S.jpg")
+    subprocess.run(["fswebcam", "-d", webcam_device, image_filename])
+
+    # Turn off LED and wait a few seconds before checking PIR sensor again
+    GPIO.output(led_pin, GPIO.LOW)
+    time.sleep(5)
